@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1762526988 source:c:\users\pichau\downloads\p1_progii\adventuregame\main.c
+	<stdio.h>
+	<stdlib.h>
+	<locale.h>
+	<time.h>
+	<stdbool.h>
+	<conio.h>
+	<string.h>
+
