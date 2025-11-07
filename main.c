@@ -14,7 +14,7 @@ typedef struct{
     char nome[TAM];
     char sexo;
     char classe;
-    int pv;
+    float pv;
     int agilidade;
     int fase;
     float defesa;
@@ -24,7 +24,7 @@ typedef struct{
 
 typedef struct{
     char nome[TAM];
-    int pv;
+    float pv;
     int agilidade;
     float forca;
     float defesa;
@@ -63,9 +63,15 @@ void combate(tipoInimigo inim, tipoPersonagem *p, int saveSlot){
                 danoCausado = rand();
                 danoCausado /= RAND_MAX;
                 danoCausado = (p->forca*1.5) - ((inim.defesa/2) + ((1) + (inim.defesa/10) * danoCausado));
-                printf("Você atacou %s, causando %.2f de dano.\n", inim.nome, danoCausado);
-                inim.pv -= danoCausado;
-                getch();
+                if(danoCausado >= 0){
+                    printf("Você atacou %s, causando %.2f de dano.\n", inim.nome, danoCausado);
+                    inim.pv -= danoCausado;
+                    getch();
+                }
+                else{
+                    printf("Você atacou %s, mas não causou dano.\n", inim.nome);
+                    getch();
+                }
             }
             else if(strncmp(acao,"defender",8) == 0){
                 p->defesa = originalDef;
@@ -78,7 +84,7 @@ void combate(tipoInimigo inim, tipoPersonagem *p, int saveSlot){
             }
             else if(strncmp(acao,"status", 6) == 0){
                 printf("\nSeus status são:\n");
-                printf("PV: %d\nForça: %.2f\nDestreza: %d\nDefesa: %.2f\n", p->pv, p->forca, p->agilidade, p->defesa);
+                printf("PV: %.2f\nForça: %.2f\nDestreza: %d\nDefesa: %.2f\n", p->pv, p->forca, p->agilidade, p->defesa);
                 getch();
                 continue;
             }
@@ -99,11 +105,17 @@ void combate(tipoInimigo inim, tipoPersonagem *p, int saveSlot){
             danoCausado = rand();
             danoCausado /= RAND_MAX;
             danoCausado = (inim.forca*1.3) - (p->defesa + (danoCausado * ((p->defesa/10) + 1)));
-            printf("%s te atacou! Causando %.2f de dano.\n", inim.nome, danoCausado);
-            p->pv -= danoCausado;
+            if(danoCausado >= 0){
+                printf("%s te atacou! Causando %.2f de dano.\n", inim.nome, danoCausado);
+                p->pv -= danoCausado;
+                getch();
+            }
+            else{
+                printf("%s te atacou, mas não causou dano.\n", inim.nome);
+                getch();
+            }
             inim.agilidade = 0;
             jaAtacou = false;
-            getch();
             if(p->pv <= 0){
                 printf("Você perdeu!\n");
                 getch();
@@ -136,11 +148,11 @@ void selecionarFase(tipoPersonagem p, int saveSlot){
 
 void fase1(tipoPersonagem p, int saveSlot){
     system("cls");
-    bool inimigosDerrotados[3] = {false,false,false};
+    bool inimigosDerrotados[2] = {false,false};
     bool movimentoValido = false;
     char escolhas[TAM_ESCOLHA];
     printf("-------------------------------------------------------FLORESTA PERDIDA-------------------------------------------------------\n\n");
-    sleep(2);
+    sleep(1);
     printf("Você já jogou jogos no estilo Adventure antes? S/N\n");
     fflush(stdin);
     scanf("%c", &escolhas[0]);
@@ -204,6 +216,7 @@ void fase1(tipoPersonagem p, int saveSlot){
                     getch();
                     printf("É a espada de um cavaleiro de elite do reino, ela te concede +15 de força.\n");
                     getch();
+                    p.pv += 35;
                     p.forca += 15;
                     printf("Não há mais nada a fazer aqui. Você volta para onde estava antes.\n");
                     getch();
@@ -215,7 +228,25 @@ void fase1(tipoPersonagem p, int saveSlot){
                     continue;
                 }
                 else if(strncmp(escolhas, "norte", 5) == 0){
-                    printf("Boa, você está quase chegando amiguinho.\n");
+                    printf("\nApós andar por incontáveis horas, você chega ao fim da floresta.\n");
+                    getch();
+                    printf("Ao sair da floresta você chega em um vasto campo verdejante com um clima agradável e nada hostil.\n");
+                    getch();
+                    printf("Bem a sua frente, você encontra a princesa desacordada, deitada em meio a grama.\n");
+                    getch();
+                    printf("Antes que você pudesse se aproximar dela, um dragão rasga os céus e pousa bem a sua frente.\n");
+                    getch();
+                    printf("Ele é o último desafio que você precisa enfrentar antes de poder salvar a princesa!\n");
+                    getch();
+                    tipoInimigo dragao;
+                    strcpy(dragao.nome, "Dragão");
+                    dragao.pv = 120;
+                    dragao.forca = 65;
+                    dragao.agilidade = 60;
+                    dragao.defesa = 50;
+                    combate(dragao, &p, saveSlot);
+                    movimentoValido = true;
+                    break;
                 }
                 else if(strncmp(escolhas, "sul", 3) == 0){
                     printf("Voltando...\n");
@@ -224,7 +255,7 @@ void fase1(tipoPersonagem p, int saveSlot){
                 }
                 else if(strncmp(escolhas, "status", 6) == 0){
                     printf("\nSeus status são:\n");
-                    printf("PV: %d\nForça: %.2f\nDestreza: %d\nDefesa: %.2f\n", p.pv, p.forca, p.agilidade, p.defesa);
+                    printf("PV: %.2f\nForça: %.2f\nDestreza: %d\nDefesa: %.2f\n", p.pv, p.forca, p.agilidade, p.defesa);
                     getch();
                     continue;
                 }
@@ -268,6 +299,7 @@ void fase1(tipoPersonagem p, int saveSlot){
                 getch();
                 printf("Você promete resgatar a princesa pelo cavaleiro morto, e pega seu escudo para te ajudar na missão, aumentando sua defesa em 10 pontos.\n");
                 getch();
+                p.pv += 20;
                 p.defesa += 10;
                 printf("Não há mais nada a fazer aqui. Você volta para onde estava antes.\n");
                 getch();
@@ -281,7 +313,7 @@ void fase1(tipoPersonagem p, int saveSlot){
             }
             else if(strncmp(escolhas, "status", 6) == 0){
                 printf("\nSeus status são:\n");
-                printf("PV: %d\nForça: %.2f\nDestreza: %d\nDefesa: %.2f\n", p.pv, p.forca, p.agilidade, p.defesa);
+                printf("PV: %.2f\nForça: %.2f\nDestreza: %d\nDefesa: %.2f\n", p.pv, p.forca, p.agilidade, p.defesa);
                 getch();
                 continue;
             }
@@ -306,7 +338,7 @@ void fase1(tipoPersonagem p, int saveSlot){
         }
         else if(strncmp(escolhas, "status", 6) == 0){
             printf("\nSeus status são:\n");
-            printf("PV: %d\nForça: %.2f\nDestreza: %d\nDefesa: %.2f\n", p.pv, p.forca, p.agilidade, p.defesa);
+            printf("PV: %.2f\nForça: %.2f\nDestreza: %d\nDefesa: %.2f\n", p.pv, p.forca, p.agilidade, p.defesa);
             getch();
             continue;
         }
@@ -324,7 +356,10 @@ void fase1(tipoPersonagem p, int saveSlot){
             continue;
         }
     }
-    printf("Fora do loop!");
+    printf("Parabéns!!! Você derrotou o dragão e salvou a princesa.\n");
+    getch();
+    system("cls");
+    printf("-------------------------------------------------------GAME OVER-------------------------------------------------------");
     getch();
     menu();
 }
@@ -342,7 +377,7 @@ void introducao(tipoPersonagem p, int saveSlot){
 "'''''''''''''''''';''';''''''''''''''''''\n"
 "                   '''\n"
          );
-    printf("-------------------------------------------------------INTRODUO-------------------------------------------------------\n\n");
+    printf("-------------------------------------------------------INTRODUÇÃO-------------------------------------------------------\n\n");
     sleep(2);
     printf("Há 500 anos o reino de Lusíade não havia registrado nenhum ataque massivo de monstros contra o castelo do rei, entretando, há dois dias, a situação mudou...\n");
     getch();
@@ -399,7 +434,7 @@ void salvarPersonagem(tipoPersonagem p,int saveSlot, bool selecionaFase){
     fclose(arq);
     printf("\nPersonagem salvo com sucesso! Retornando ao jogo...\n");
     sleep(2);
-    if(selecionaFase = true){
+    if(selecionaFase == true){
         selecionarFase(p, saveSlot);
     }
 }
@@ -447,38 +482,38 @@ void criarPersonagem(int saveSlot){
             if(novo.classe == 'g'){
                 printf("\nSeu personagem é GUERREIRO! Seus status são:\n"
                        "PV: 60.\n"
-                       "Força: 40.\n"
-                       "Destreza: 25\n"
-                       "Defesa: 60\n"
+                       "Força: 55.\n"
+                       "Destreza: 40\n"
+                       "Defesa: 75\n"
                        );
                 novo.pv = 60;
-                novo.forca = 40;
-                novo.agilidade = 25;
-                novo.defesa = 60;
+                novo.forca = 55;
+                novo.agilidade = 40;
+                novo.defesa = 75;
             }
             else if(novo.classe == 'l'){
                 printf("\nSeu personagem é LADRÃO! Seus status são:\n"
-                        "PV: 50\n"
-                        "Força: 25\n"
-                        "Destreza: 60\n"
-                        "Defesa: 40\n"
+                        "PV: 55\n"
+                        "Força: 40\n"
+                        "Destreza: 75\n"
+                        "Defesa: 55\n"
                     );
-                novo.pv = 50;
-                novo.forca = 25;
-                novo.agilidade = 60;
-                novo.defesa = 40;
+                novo.pv = 55;
+                novo.forca = 40;
+                novo.agilidade = 75;
+                novo.defesa = 55;
             }
             else if(novo.classe == 'b'){
                 printf("\nSeu personagem é BÁRBARO! Seus status são:\n"
-                        "PV: 45\n"
-                        "Força: 60\n"
-                        "Destreza: 40\n"
-                        "Defesa: 25\n"
+                        "PV: 55\n"
+                        "Força: 75\n"
+                        "Destreza: 55\n"
+                        "Defesa: 40\n"
                     );
-                novo.pv = 45;
-                novo.forca = 60;
-                novo.agilidade = 40;
-                novo.defesa = 25;
+                novo.pv = 55;
+                novo.forca = 75;
+                novo.agilidade = 55;
+                novo.defesa = 40;
             }
             else{
                 printf("\nCaracter inválido, digite novamente!\n");
@@ -577,7 +612,7 @@ void selecaoSave(bool newGame){
         }
         printf("\n\n-------------------------------------------------------ARQUIVO %d-------------------------------------------------------\n\n", i+1);
         if(personagem.isAlive){
-            printf("Nome: %sSexo: %c\nClasse: %c\nPV: %d\nForça: %.2f\nDestreza: %d\nDefesa: %.2f\n", personagem.nome, personagem.sexo, personagem.classe, personagem.pv, personagem.forca, personagem.agilidade, personagem.defesa);
+            printf("Nome: %sSexo: %c\nClasse: %c\nPV: %.2f\nForça: %.2f\nDestreza: %d\nDefesa: %.2f\n", personagem.nome, personagem.sexo, personagem.classe, personagem.pv, personagem.forca, personagem.agilidade, personagem.defesa);
         }
         else{
             printf("Vazio\n");
